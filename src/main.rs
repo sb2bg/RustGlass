@@ -8,8 +8,12 @@ fn main() {
         .version("1.0.0")
         .author("Sullivan B")
         .about("Dynamically typed language written in RustLang")
-        .arg(Arg::from_usage("run")
+        .arg(Arg::with_name("run")
             .index(1)
-            .takes_value(true)
-        );
+            .takes_value(true))
+        .get_matches();
+
+    if let Some(i) = matches.value_of("run") {
+        println!("{}", i);
+    }
 }
