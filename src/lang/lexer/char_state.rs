@@ -33,7 +33,7 @@ pub fn state_from_char(current: char) -> Result<CharState, char> {
         return Ok(CharState::Letter);
     } else if "+-*/%<>=!".contains(current) {
         return Ok(CharState::Operator);
-    } else if "/,()[]{}:".contains(current) {
+    } else if "/,.()[]{}:".contains(current) {
         return Ok(CharState::SingleConsumable);
     } else if current == '"' {
         return Ok(CharState::Quotation);
