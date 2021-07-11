@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 use crate::lang::lexer::token::token_type::TokenType;
 
 lazy_static! {
-    static ref CHAR_MAP: HashMap<&'static str, TokenType> = {
+    static ref TOKEN_MAP: HashMap<&'static str, TokenType> = {
         let mut m = HashMap::new();
         m.insert("+", TokenType::Plus);
         m.insert("-", TokenType::Minus);
@@ -22,12 +22,36 @@ lazy_static! {
         m.insert("*=", TokenType::TimesEquals);
         m.insert("/=", TokenType::DivideEquals);
         m.insert("%=", TokenType::ModEquals);
-        return m;
+        m
     };
 }
 
-pub fn get(value: String) -> Result<TokenType, String> {
-    return match CHAR_MAP.get(value.as_str()) {
+lazy_static! {
+    // todo - test escape codes
+    static ref ESC_MAP: HashMap<char, char> = {
+        let mut m = HashMap::new();
+        m.insert('a', '\x07');
+        m.insert('b', '\x08');
+        m.insert('f', '\x0C');
+        m.insert('n', '\n');
+        m.insert('t', '\t');
+        m.insert('r', '\r');
+        m.insert('\'', '\'');
+        m.insert('"', '"');
+        m.insert('\\', '\\');
+        m
+    };
+}
+
+pub fn get_token(value: String) -> Result<TokenType, String> {
+    return match TOKEN_MAP.get(value.as_str()) {
+        Some(result) => Ok(*result),
+        None => Err(value)
+    };
+}
+
+pub fn get_esc(value: char) -> Result<char, char> {
+    return match ESC_MAP.get(&value) {
         Some(result) => Ok(*result),
         None => Err(value)
     };
