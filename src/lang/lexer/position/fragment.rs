@@ -24,7 +24,7 @@ impl PositionFragment {
         let result = match self.source.lines().nth(line) {
             Some(line) => line,
             None => {
-                dispatch_error(ErrorType::GenericError, Some(&["converting position to string"]), None);
+                dispatch_error(ErrorType::GenericError, Some(&[String::from("converting position to string")]), None);
                 panic!(); // (not called) avoid incompatible arm type error
             }
         };
