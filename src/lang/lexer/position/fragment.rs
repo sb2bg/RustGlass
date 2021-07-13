@@ -3,21 +3,17 @@ use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::position::Position;
 
 pub struct PositionFragment {
-    source: &'static str,
+    source: String,
     pos: Position,
 }
 
 impl PositionFragment {
-    pub fn new(source: &'static str, pos: Position) -> Self {
+    pub fn new(source: String, pos: Position) -> Self {
         return PositionFragment { source, pos };
     }
 
     pub fn get_pos(&self) -> Position {
-        return self.pos;
-    }
-
-    pub fn to_string(&self) -> String {
-        return format_args!("\n\n\t{}\n\t {}^\n{}", self.get_line((self.pos.row - 1) as usize), " ".repeat((self.pos.column - 1) as usize), self.pos.to_string()).to_string();
+        return self.pos.clone();
     }
 
     fn get_line(&self, line: usize) -> &str {
@@ -30,5 +26,13 @@ impl PositionFragment {
         };
 
         return result;
+    }
+}
+
+impl ToString for PositionFragment {
+    fn to_string(&self) -> String {
+        let line = (self.pos.row - 1) as usize;
+        let col = (self.pos.column - 1) as usize;
+        return format_args!("\n\n\t\t{}\n\t\t{}^\n\t{}", self.get_line(line), if col > 0 { " ".repeat(col) } else { String::new() }, self.pos.to_string()).to_string();
     }
 }
