@@ -20,6 +20,7 @@ pub struct Lexer {
     state: CharState,
 }
 
+// todo - remove pos fragment and replace with pos class itself by passing in source once to the original position, and never again?
 impl Lexer {
     pub fn new(filename: String, value: String) -> Lexer {
         let chars: Vec<char> = value.chars().collect();
