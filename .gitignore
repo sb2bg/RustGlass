@@ -6,3 +6,5 @@ Cargo.lock
 **/*.rs.bk
 
 *.pdb
+
+test.glass
