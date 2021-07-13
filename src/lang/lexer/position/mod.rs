@@ -1,15 +1,15 @@
-pub(crate) mod fragment;
+pub mod fragment;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Position {
-    filename: &'static str,
+    filename: String,
     absolute_index: i32,
     column: i32,
     row: i32,
 }
 
 impl Position {
-    pub fn new(filename: &'static str) -> Self {
+    pub fn new(filename: String) -> Self {
         return Position { filename, absolute_index: 0, column: 1, row: 1 };
     }
 
