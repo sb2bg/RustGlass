@@ -20,4 +20,14 @@ impl Token {
             pos,
         };
     }
+
+    pub fn get_type(&self) -> TokenType {
+        return self.token_type;
+    }
+}
+
+impl ToString for Token {
+    fn to_string(&self) -> String {
+        return format_args!("{}{}", self.token_type.to_string(), if self.value.is_empty() { String::new() } else { format_args!("({})", self.value).to_string() }).to_string();
+    }
 }
