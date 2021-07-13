@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 #[derive(PartialEq)]
 pub enum CharState {
     Whitespace,
@@ -25,7 +23,7 @@ impl CharState {
 pub fn state_from_char(current: char) -> Result<CharState, char> {
     if current.is_ascii_digit() {
         return Ok(CharState::Number);
-    } else if "\";".contains(current) {
+    } else if "\n;".contains(current) {
         return Ok(CharState::Newline);
     } else if current.is_whitespace() {
         return Ok(CharState::Whitespace);
