@@ -4,8 +4,8 @@ pub mod fragment;
 pub struct Position {
     filename: String,
     absolute_index: i32,
-    column: i32,
-    row: i32,
+    column: usize,
+    row: usize,
 }
 
 impl Position {

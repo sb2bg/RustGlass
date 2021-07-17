@@ -31,8 +31,8 @@ impl PositionFragment {
 
 impl ToString for PositionFragment {
     fn to_string(&self) -> String {
-        let line = (self.pos.row - 1) as usize;
-        let col = (self.pos.column - 1) as usize;
+        let line = self.pos.row - 1;
+        let col = self.pos.column - 1;
         return format_args!("\n\n\t\t{}\n\t\t{}^\n\t{}", self.get_line(line), if col > 0 { " ".repeat(col) } else { String::new() }, self.pos.to_string()).to_string();
     }
 }
