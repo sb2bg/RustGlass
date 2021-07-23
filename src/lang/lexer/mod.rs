@@ -1,82 +1,76 @@
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
-use crate::lang::lexer::char_state::{CharState, state_from_char};
-use crate::lang::lexer::position::fragment::PositionFragment;
 use crate::lang::lexer::position::Position;
 use crate::lang::lexer::token::Token;
 use crate::lang::lexer::token::token_type::TokenType;
 
 mod token;
 mod char_maps;
-mod char_state;
 pub mod position;
 
-pub struct Lexer {
+pub struct Lexer<'a> {
     value: Vec<char>,
-    source: String,
+    source: &'a str,
     index: usize,
-    position: Position,
+    position: Position<'a>,
     current: char,
-    state: CharState,
 }
 
-// todo - remove pos fragment and replace with pos class itself by passing in source once to the original position, and never again?
-impl Lexer {
-    pub fn new(filename: String, value: String) -> Lexer {
-        let chars: Vec<char> = value.chars().collect();
+impl<'a> Lexer<'a> {
+    pub fn new(filename: &'a str, source: &'a str) -> Self {
+        let chars: Vec<char> = source.chars().collect();
         let first = if chars.len() <= 0 { '\0' } else { *chars.get(0).unwrap() };
-        let pos = Position::new(filename);
 
-        return Lexer {
-            source: value.clone(),
+        Self {
+            source,
             value: chars,
             index: 0,
             current: first,
-            position: pos.clone(),
-            state: match state_from_char(first) {
-                Ok(value) => value,
-                Err(error) => {
-                    dispatch_error(ErrorType::UnknownChar, Some(&[error.to_string()]), Some(PositionFragment::new(value, pos)));
-                    CharState::Eof
-                }
-            },
-        };
+            position: Position::new(filename, source),
+        }
     }
 
     // todo - implicit line joins (python inspired <3)
-    pub fn lex(&mut self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = Vec::new();
+    pub fn lex(&mut self) -> Vec<Token<'a>> {
+        let mut tokens = Vec::new();
 
         while !self.is_done() {
-            match self.state {
-                CharState::Whitespace => { self.advance(); }
-                CharState::Newline => { if tokens.get(tokens.len() - 1).unwrap().get_type() != TokenType::Newline { tokens.push(self.consume_newline()) } else { self.advance() }; }
-                CharState::Number => { tokens.push(self.consume_number()); }
-                CharState::Operator => { tokens.push(self.consume_operator()); }
-                CharState::Quotation => { tokens.push(self.consume_string()); }
-                CharState::SingleConsumable => { tokens.push(self.consume_single()); }
-                CharState::Comment => { self.consume_comment(); }
-                _ => { tokens.push(self.consume_identifier()); }
+            if self.current.is_ascii_digit() {
+                tokens.push(self.consume_number());
+            } else if self.is_newline() {
+                if tokens.get(tokens.len() - 1).unwrap().get_type() != TokenType::Newline { tokens.push(self.consume_newline()) } else { self.advance() };
+            } else if self.current.is_whitespace() {
+                self.advance();
+            } else if self.is_operator() {
+                tokens.push(self.consume_operator());
+            } else if self.is_single() {
+                tokens.push(self.consume_single());
+            } else if self.is_quote() {
+                tokens.push(self.consume_string());
+            } else if self.is_comment() {
+                self.consume_comment();
+            } else {
+                tokens.push(self.consume_identifier());
             }
         }
 
-        return tokens;
+        tokens
     }
 
-    fn consume_newline(&mut self) -> Token {
+    fn consume_newline(&mut self) -> Token<'a> {
         self.advance();
-        return Token::new(TokenType::Newline, None, PositionFragment::new(self.source.clone(), self.position.clone()));
+        Token::new(TokenType::Newline, None, self.position)
     }
 
-    fn consume_number(&mut self) -> Token {
+    fn consume_number(&mut self) -> Token<'a> {
         let start = self.position.clone();
         let mut buffer = String::new();
         let mut dec = false;
 
-        while !self.is_done() && self.state.matches(&[CharState::Number, CharState::Period]) {
-            if self.state == CharState::Period {
+        while !self.is_done() && self.current.is_ascii_digit() || self.current == '.' {
+            if self.current == '.' {
                 if dec {
-                    dispatch_error(ErrorType::DoubleDecimal, None, Some(PositionFragment::new(self.source.clone(), self.position.clone())));
+                    dispatch_error(ErrorType::DoubleDecimal, Some(self.position));
                 }
                 dec = true;
             }
@@ -86,50 +80,49 @@ impl Lexer {
         }
 
         if buffer.ends_with('.') {
-            dispatch_error(ErrorType::DecimalEnding, None, Some(PositionFragment::new(self.source.clone(), self.position.clone())));
+            dispatch_error(ErrorType::DecimalEnding, Some(self.position));
         }
 
-        return Token::new(TokenType::Number, Some(buffer), PositionFragment::new(self.source.clone(), start));
+        Token::new(TokenType::Number, Some(buffer), start)
     }
 
-    fn consume_operator(&mut self) -> Token {
+    fn consume_operator(&mut self) -> Token<'a> {
         let start = self.position.clone();
         let mut buffer = String::new();
 
-        while !self.is_done() && self.state == CharState::Operator
+        while !self.is_done() && self.is_operator()
         {
             buffer.push(self.current);
             self.advance();
         }
 
-
         match char_maps::get_token(buffer) {
-            Ok(operator) => return Token::new(operator, None, PositionFragment::new(self.source.clone(), start)),
+            Ok(operator) => Token::new(operator, None, start),
             Err(value) => {
-                dispatch_error(ErrorType::InvalidOperator, Some(&[value]), Some(PositionFragment::new(self.source.clone(), start)));
+                dispatch_error(ErrorType::InvalidOperator(value.as_str()), Some(self.position));
                 panic!(); // (not called) avoid incompatible arm type error
             }
         }
     }
 
     // todo - test strings and all that fun stuff!
-    fn consume_string(&mut self) -> Token {
+    fn consume_string(&mut self) -> Token<'a> {
         let start = self.position.clone();
         self.advance();
         let mut buffer = String::new();
         let mut esc = false;
 
-        while !self.is_done() && self.state != CharState::Quotation {
+        while !self.is_done() && !self.is_quote() {
             if esc {
                 match char_maps::get_esc(self.current) {
                     Ok(escaped) => buffer.push(escaped),
                     Err(unknown) => {
-                        dispatch_error(ErrorType::UnknownEscapeSequence, Some(&[unknown.to_string()]), Some(PositionFragment::new(self.source.clone(), self.position.clone())));
+                        dispatch_error(ErrorType::UnknownEscapeSequence(unknown), Some(self.position));
                         panic!(); // (not called) avoid incompatible arm type error
                     }
                 }
                 esc = false;
-            } else if self.state == CharState::Escape {
+            } else if self.current == '\\' {
                 esc = true;
             } else {
                 buffer.push(self.current);
@@ -138,68 +131,79 @@ impl Lexer {
             self.advance();
         }
 
-        if self.state != CharState::Quotation {
-            dispatch_error(ErrorType::UnclosedString, None, Some(PositionFragment::new(self.source.clone(), self.position.clone())));
+        if !self.is_quote() {
+            dispatch_error(ErrorType::UnclosedString, Some(self.position));
         }
 
         self.advance();
-        return Token::new(TokenType::String, Some(buffer), PositionFragment::new(self.source.clone(), start));
+        Token::new(TokenType::String, Some(buffer), start)
     }
 
-    fn consume_single(&mut self) -> Token {
+    fn consume_single(&mut self) -> Token<'a> {
         let start = self.position.clone();
 
         let token = match char_maps::get_token(String::from(self.current)) {
             Ok(token) => token,
             Err(single) => {
-                dispatch_error(ErrorType::UnknownChar, Some(&[single.to_string()]), Some(PositionFragment::new(self.source.clone(), self.position.clone())));
+                dispatch_error(ErrorType::UnknownChar(single.chars().nth(0).unwrap()), Some(self.position));
                 panic!(); // (not called) avoid incompatible arm type error
             }
         };
 
         self.advance();
-        return Token::new(token, None, PositionFragment::new(self.source.clone(), start));
+        Token::new(token, None, start)
     }
 
-    // todo - not working properly?
     fn consume_comment(&mut self) {
-        while !self.is_done() && self.state != CharState::Newline {
+        while !self.is_done() && !self.is_newline() {
             self.advance();
         }
         self.advance();
     }
 
-    fn consume_identifier(&mut self) -> Token {
+    fn consume_identifier(&mut self) -> Token<'a> {
         let start = self.position.clone();
         let mut buffer = String::new();
 
-        while !self.is_done() && self.state.matches(&[CharState::Letter, CharState::Number, CharState::Underscore])
+        while !self.is_done() && self.current == '_' || self.current.is_ascii_digit() || self.current.is_ascii_alphabetic()
         {
             buffer.push(self.current);
             self.advance();
         }
 
-        return match char_maps::get_token(buffer) {
-            Ok(token) => Token::new(token, None, PositionFragment::new(self.source.clone(), start)),
-            Err(value) => Token::new(TokenType::Identifier, Some(value), PositionFragment::new(self.source.clone(), start))
-        };
+        match char_maps::get_token(buffer) {
+            Ok(token) => Token::new(token, None, start),
+            Err(value) => Token::new(TokenType::Identifier, Some(value), start)
+        }
     }
 
     fn advance(&mut self) {
         self.index += 1;
         self.current = if self.is_done() { '\0' } else { self.value[self.index] };
-        self.position.advance(self.state == CharState::Newline);
-        self.state = match state_from_char(self.current) {
-            Ok(value) => value,
-            Err(error) => {
-                dispatch_error(ErrorType::UnknownChar, Some(&[error.to_string()]), Some(PositionFragment::new(self.source.clone(), self.position.clone())));
-                panic!(); // (not called) avoid incompatible arm type error
-            }
-        };
+        self.position.advance(self.is_newline());
     }
 
     fn is_done(&self) -> bool {
-        return self.index >= self.value.len() || self.current == '\0';
+        self.index >= self.value.len() || self.current == '\0'
+    }
+
+    fn is_newline(&self) -> bool {
+        "\n;".contains(self.current)
+    }
+
+    fn is_operator(&self) -> bool {
+        "+-*/%<>=!".contains(self.current)
+    }
+
+    fn is_single(&self) -> bool {
+        "/,.()[]{}:".contains(self.current)
+    }
+
+    fn is_quote(&self) -> bool {
+        self.current == '"'
+    }
+
+    fn is_comment(&self) -> bool {
+        self.current == '#'
     }
 }
-
