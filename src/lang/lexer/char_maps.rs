@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use crate::lang::lexer::token::token_type::TokenType;
-use crate::lang::lexer::token::Token;
 
 lazy_static! {
     static ref TOKEN_MAP: HashMap<&'static str, TokenType> = {
@@ -14,6 +13,7 @@ lazy_static! {
         m.insert("/", TokenType::Divide);
         m.insert("=", TokenType::Equal);
         m.insert("%", TokenType::Mod);
+        m.insert("**", TokenType::Pow);
         m.insert(">", TokenType::GreaterThan);
         m.insert(">=", TokenType::GreaterThanEqual);
         m.insert("<", TokenType::LessThan);
@@ -24,12 +24,15 @@ lazy_static! {
         m.insert("*=", TokenType::TimesEquals);
         m.insert("/=", TokenType::DivideEquals);
         m.insert("%=", TokenType::ModEquals);
+        m.insert("==", TokenType::DoubleEqual);
         m.insert("(", TokenType::Lparen);
         m.insert(")", TokenType::Rparen);
         m.insert("{", TokenType::Lbrace);
         m.insert("}", TokenType::Rbrace);
         m.insert("[", TokenType::Lbracket);
         m.insert("]", TokenType::Rbracket);
+        m.insert(",", TokenType::Comma);
+        m.insert(".", TokenType::Period);
         m.insert("void", TokenType::Void);
         m.insert("print", TokenType::Print);
         m.insert("println", TokenType::Println);
@@ -48,6 +51,7 @@ lazy_static! {
         m.insert("or", TokenType::Or);
         m.insert("not", TokenType::Not);
         m.insert("str", TokenType::Str);
+        m.insert("typeof", TokenType::Typeof);
         m
     };
 }
@@ -70,15 +74,15 @@ lazy_static! {
 }
 
 pub fn get_token(value: String) -> Result<TokenType, String> {
-    return match TOKEN_MAP.get(value.as_str()) {
+    match TOKEN_MAP.get(value.as_str()) {
         Some(result) => Ok(*result),
         None => Err(value)
-    };
+    }
 }
 
 pub fn get_esc(value: char) -> Result<char, char> {
-    return match ESC_MAP.get(&value) {
+    match ESC_MAP.get(&value) {
         Some(result) => Ok(*result),
         None => Err(value)
-    };
+    }
 }
