@@ -1,5 +1,6 @@
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
+use crate::errorsystem::error_type::ErrorType::UnknownChar;
 use crate::lang::lexer::position::Position;
 use crate::lang::lexer::token::Token;
 use crate::lang::lexer::token::token_type::TokenType;
@@ -169,6 +170,10 @@ impl<'a> Lexer<'a> {
         {
             buffer.push(self.current);
             self.advance();
+        }
+
+        if buffer.len() < 1 {
+            dispatch_error(UnknownChar(self.current), Some(self.position));
         }
 
         match char_maps::get_token(buffer) {
