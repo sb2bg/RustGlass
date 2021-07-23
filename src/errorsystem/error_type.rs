@@ -24,7 +24,7 @@ pub enum ErrorType<'a> {
 
 impl ToString for ErrorType<'_> {
     fn to_string(&self) -> String {
-        return match self {
+        match self {
             ErrorType::GenericError(a1) => format!("Unknown error occurred during the '{}' process", a1),
             ErrorType::UnknownFile(a1) => format!("Couldn't find file '{}'", a1),
             ErrorType::DoubleDecimal => String::from("Cannot have two decimals in a number"),
@@ -45,6 +45,6 @@ impl ToString for ErrorType<'_> {
             ErrorType::UnexpectedArgCount(a1, a2) => format!("Expected {} args, instead got {}", a1, a2),
             ErrorType::InvalidIteration(a1) => format!("Cannot iterate over type '{}'", a1),
             ErrorType::UnknownKeyword(a1) => format!("Unknown keyword '{}'", a1),
-        };
+        }
     }
 }
