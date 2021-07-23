@@ -1,16 +1,18 @@
-pub mod fragment;
+use crate::errorsystem::dispatch_error;
+use crate::errorsystem::error_type::ErrorType;
 
-#[derive(Clone)]
-pub struct Position {
-    filename: String,
+#[derive(Copy, Clone)]
+pub struct Position<'a> {
+    source: &'a str,
+    filename: &'a str,
     absolute_index: i32,
     column: usize,
     row: usize,
 }
 
-impl Position {
-    pub fn new(filename: String) -> Self {
-        return Position { filename, absolute_index: 0, column: 1, row: 1 };
+impl<'a> Position<'a> {
+    pub fn new(filename: &'a str, source: &'a str) -> Self {
+        Position { filename, source, absolute_index: 0, column: 1, row: 1 }
     }
 
     pub fn advance(&mut self, newline: bool) -> &Position {
@@ -18,10 +20,26 @@ impl Position {
         self.row = if newline { self.row + 1 } else { self.row };
         self.absolute_index += 1;
 
-        return self;
+        self
     }
 
-    pub fn to_string(&self) -> String {
-        return format_args!("[{}(Ln:{} Col:{})]", self.filename, self.row, self.column).to_string();
+    fn get_line(&self, line: usize) -> &str {
+        let result = match self.source.lines().nth(line) {
+            Some(line) => line,
+            None => {
+                dispatch_error(ErrorType::GenericError("converting position to string"), None);
+                panic!(); // (not called) avoid incompatible arm type error
+            }
+        };
+
+        result
+    }
+}
+
+impl ToString for Position<'_> {
+    fn to_string(&self) -> String {
+        let line = self.row - 1;
+        let col = self.column - 1;
+        format!("\n\n\t\t{}\n\t\t{}^\n\t{}", self.get_line(line), if col > 0 { " ".repeat(col) } else { String::new() }, self.to_string())
     }
 }
