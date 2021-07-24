@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use lazy_static::lazy_static;
 
@@ -32,6 +32,7 @@ lazy_static! {
         m.insert("[", TokenType::Lbracket);
         m.insert("]", TokenType::Rbracket);
         m.insert(",", TokenType::Comma);
+        m.insert(":", TokenType::Colon);
         m.insert(".", TokenType::Period);
         m.insert("void", TokenType::Void);
         m.insert("print", TokenType::Print);
@@ -57,7 +58,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    // todo - test escape codes
+    // the escape codes which can be used in strings
     static ref ESC_MAP: HashMap<char, char> = {
         let mut m = HashMap::new();
         m.insert('a', '\x07');
