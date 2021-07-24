@@ -28,6 +28,7 @@ impl<'a> Token<'a> {
 
 impl ToString for Token<'_> {
     fn to_string(&self) -> String {
-        format!("{}{}", self.token_type.to_string(), if self.value.is_empty() { String::new() } else { format_args!("({})", self.value).to_string() })
+        let token_type: &str = self.token_type.into();
+        format!("{}{}", token_type, if self.value.is_empty() { String::new() } else { format_args!("({})", self.value).to_string() })
     }
 }
