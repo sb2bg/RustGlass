@@ -1,4 +1,6 @@
-#[derive(Copy, Clone, PartialEq)]
+use strum_macros::IntoStaticStr;
+
+#[derive(Copy, Clone, PartialEq, IntoStaticStr)]
 pub enum TokenType {
     Plus,
     Minus,
@@ -49,60 +51,5 @@ pub enum TokenType {
     Pow,
     Typeof,
     Comma,
-}
-
-impl ToString for TokenType {
-    fn to_string(&self) -> String {
-        String::from(match self {
-            Self::Plus => "Plus",
-            Self::Minus => "Minus",
-            Self::Times => "Times",
-            Self::Divide => "Divide",
-            Self::Mod => "Mod",
-            Self::PlusEquals => "PlusEquals",
-            Self::MinusEquals => "MinusEquals",
-            Self::TimesEquals => "TimesEquals",
-            Self::DivideEquals => "DivideEquals",
-            Self::DoubleEqual => "==",
-            Self::ModEquals => "ModEquals",
-            Self::Not => "Not",
-            Self::Or => "Or",
-            Self::GreaterThan => "GreaterThan",
-            Self::GreaterThanEqual => "GreaterThanEqual",
-            Self::LessThan => "LessThan",
-            Self::LessThanEqual => "LessThanEqual",
-            Self::NotEqual => "NotEqual",
-            Self::Number => "Number",
-            Self::Identifier => "Identifier",
-            Self::Period => "Period",
-            Self::Rparen => "Rparen",
-            Self::Equal => "Equal",
-            Self::Rbracket => "Rbracket",
-            Self::Rbrace => "Rbrace",
-            Self::Lambda => "Lambda",
-            Self::Num => "Num",
-            Self::Str => "Str",
-            Self::Bool => "Bool",
-            Self::True => "True",
-            Self::Println => "Println",
-            Self::Void => "Void",
-            Self::If => "If",
-            Self::In => "In",
-            Self::Newline => "Newline",
-            Self::Lparen => "Lparen",
-            Self::Lbracket => "Lbracket",
-            Self::Lbrace => "Lbrace",
-            Self::Func => "Func",
-            Self::Function => "Function",
-            Self::False => "False",
-            Self::Print => "Print",
-            Self::List => "List",
-            Self::Dict => "Dict",
-            Self::End => "End",
-            Self::String => "String",
-            Self::Pow => "Pow",
-            Self::Typeof => "Typeof",
-            Self::Comma => "Comma",
-        })
-    }
+    Colon,
 }
