@@ -11,10 +11,10 @@ pub mod position;
 
 pub struct Lexer<'a> {
     value: Vec<char>,
-    source: &'a str,
     index: usize,
     position: Position<'a>,
     current: char,
+    wrap_count: usize,
 }
 
 impl<'a> Lexer<'a> {
@@ -23,11 +23,11 @@ impl<'a> Lexer<'a> {
         let first = if chars.len() <= 0 { '\0' } else { *chars.get(0).unwrap() };
 
         Self {
-            source,
             value: chars,
             index: 0,
             current: first,
             position: Position::new(filename, source),
+            wrap_count: 0,
         }
     }
 
@@ -36,15 +36,15 @@ impl<'a> Lexer<'a> {
         let mut tokens = Vec::new();
 
         while !self.is_done() {
-            if self.current.is_ascii_digit() {
-                tokens.push(self.consume_number());
-            } else if self.is_newline() {
-                if tokens.get(tokens.len() - 1).unwrap().get_type() != TokenType::Newline { tokens.push(self.consume_newline()) } else { self.advance() };
+            if self.is_newline() {
+                if self.get_last_token(&tokens) == TokenType::Newline || self.wrap_count > 0 { self.advance(); } else { tokens.push(self.consume_newline()); };
             } else if self.current.is_whitespace() {
                 self.advance();
+            } else if self.current.is_ascii_digit() {
+                tokens.push(self.consume_number());
             } else if self.is_operator() {
                 tokens.push(self.consume_operator());
-            } else if self.is_single() {
+            } else if self.single_check() {
                 tokens.push(self.consume_single());
             } else if self.is_quote() {
                 tokens.push(self.consume_string());
@@ -64,7 +64,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn consume_number(&mut self) -> Token<'a> {
-        let start = self.position.clone();
+        let start = self.position;
         let mut buffer = String::new();
         let mut dec = false;
 
@@ -88,7 +88,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn consume_operator(&mut self) -> Token<'a> {
-        let start = self.position.clone();
+        let start = self.position;
         let mut buffer = String::new();
 
         while !self.is_done() && self.is_operator()
@@ -108,7 +108,7 @@ impl<'a> Lexer<'a> {
 
     // todo - test strings and all that fun stuff!
     fn consume_string(&mut self) -> Token<'a> {
-        let start = self.position.clone();
+        let start = self.position;
         self.advance();
         let mut buffer = String::new();
         let mut esc = false;
@@ -141,7 +141,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn consume_single(&mut self) -> Token<'a> {
-        let start = self.position.clone();
+        let start = self.position;
 
         let token = match char_maps::get_token(String::from(self.current)) {
             Ok(token) => token,
@@ -163,7 +163,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn consume_identifier(&mut self) -> Token<'a> {
-        let start = self.position.clone();
+        let start = self.position;
         let mut buffer = String::new();
 
         while !self.is_done() && self.current == '_' || self.current.is_ascii_digit() || self.current.is_ascii_alphabetic()
@@ -188,6 +188,10 @@ impl<'a> Lexer<'a> {
         self.position.advance(self.is_newline());
     }
 
+    fn get_last_token(&self, tokens: &Vec<Token>) -> TokenType {
+        if tokens.len() > 0 { tokens.last().unwrap().get_type() } else { TokenType::Newline }
+    }
+
     fn is_done(&self) -> bool {
         self.index >= self.value.len() || self.current == '\0'
     }
@@ -200,8 +204,16 @@ impl<'a> Lexer<'a> {
         "+-*/%<>=!".contains(self.current)
     }
 
-    fn is_single(&self) -> bool {
-        "/,.()[]{}:".contains(self.current)
+    fn single_check(&mut self) -> bool {
+        if "([{".contains(self.current) {
+            self.wrap_count += 1;
+            return true;
+        } else if self.wrap_count > 0 && ")]}".contains(self.current) {
+            self.wrap_count -= 1;
+            return true;
+        }
+
+        "()[]{}/,.:".contains(self.current)
     }
 
     fn is_quote(&self) -> bool {
