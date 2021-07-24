@@ -74,6 +74,20 @@ lazy_static! {
     };
 }
 
+lazy_static! {
+    // used to increment and decrement a wrap counter for implicit line joining
+    static ref WRAP_MAP: HashMap<char, bool> = {
+        let mut m = HashMap::new();
+        m.insert('(', true);
+        m.insert('[', true);
+        m.insert('{', true);
+        m.insert(')', false);
+        m.insert(']', false);
+        m.insert('}', false);
+        m
+    };
+}
+
 pub fn get_token(value: String) -> Result<TokenType, String> {
     match TOKEN_MAP.get(value.as_str()) {
         Some(result) => Ok(*result),
@@ -85,5 +99,12 @@ pub fn get_esc(value: char) -> Result<char, char> {
     match ESC_MAP.get(&value) {
         Some(result) => Ok(*result),
         None => Err(value)
+    }
+}
+
+pub fn get_wrapper(value: char) -> Option<bool> {
+    return match WRAP_MAP.get(&value) {
+        Some(result) => Some(*result), // dereference bool, only reason I didn't explicit return
+        None => None
     }
 }

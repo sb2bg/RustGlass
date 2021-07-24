@@ -14,7 +14,7 @@ pub struct Lexer<'a> {
     index: usize,
     position: Position<'a>,
     current: char,
-    wrap_count: usize,
+    wrap_count: usize, // usize instead of bool because of nested brackets, parentheses, or braces
 }
 
 impl<'a> Lexer<'a> {
@@ -31,7 +31,6 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    // todo - implicit line joins (python inspired <3)
     pub fn lex(&mut self) -> Vec<Token<'a>> {
         let mut tokens = Vec::new();
 
@@ -70,7 +69,7 @@ impl<'a> Lexer<'a> {
 
         while !self.is_done() && self.current.is_ascii_digit() || self.current == '.' {
             if self.current == '.' {
-                if dec {
+                if dec { // already had a decimal in the number
                     dispatch_error(ErrorType::DoubleDecimal, Some(self.position));
                 }
                 dec = true;
@@ -80,7 +79,7 @@ impl<'a> Lexer<'a> {
             self.advance();
         }
 
-        if buffer.ends_with('.') {
+        if buffer.ends_with('.') { // can't end a number with a decimal
             dispatch_error(ErrorType::DecimalEnding, Some(self.position));
         }
 
@@ -123,7 +122,7 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 esc = false;
-            } else if self.current == '\\' {
+            } else if self.current == '\\' { // escape character
                 esc = true;
             } else {
                 buffer.push(self.current);
@@ -205,15 +204,18 @@ impl<'a> Lexer<'a> {
     }
 
     fn single_check(&mut self) -> bool {
-        if "([{".contains(self.current) {
-            self.wrap_count += 1;
-            return true;
-        } else if self.wrap_count > 0 && ")]}".contains(self.current) {
-            self.wrap_count -= 1;
-            return true;
-        }
+        return match char_maps::get_wrapper(self.current) {
+            Some(open) => {
+                if open {
+                    self.wrap_count += 1
+                } else if self.wrap_count > 0 {
+                    self.wrap_count -= 1
+                }
 
-        "()[]{}/,.:".contains(self.current)
+                true
+            }
+            None => "/,.:".contains(self.current)
+        };
     }
 
     fn is_quote(&self) -> bool {
