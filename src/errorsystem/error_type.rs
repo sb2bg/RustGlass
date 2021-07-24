@@ -30,7 +30,7 @@ impl ToString for ErrorType<'_> {
             ErrorType::DoubleDecimal => String::from("Cannot have two decimals in a number"),
             ErrorType::DecimalEnding => String::from("Number cannot end in a decimal"),
             ErrorType::DivisionByZero => String::from("Cannot divide by zero"),
-            ErrorType::UnknownChar(a1) => format!("Unknown character '{}'", a1),
+            ErrorType::UnknownChar(a1) => format!("Unknown character '{}' encountered", a1),
             ErrorType::UnclosedString => String::from("Unclosed string"),
             ErrorType::UnknownEscapeSequence(a1) => format!("Unknown escape sequence '{}'", a1),
             ErrorType::UnexpectedExpression(a1) => format!("Expected '{}'", a1),
