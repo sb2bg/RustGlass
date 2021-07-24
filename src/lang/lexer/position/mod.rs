@@ -40,6 +40,6 @@ impl ToString for Position<'_> {
     fn to_string(&self) -> String {
         let line = self.row - 1;
         let col = self.column - 1;
-        format!("\n\n\t\t{}\n\t\t{}^\n\t[{}(Ln:{} Col:{})]", self.get_line(line), if col > 0 { " ".repeat(col) } else { String::new() }, self.filename, self.row, self.column)
+        format!("\n\n\t\t{}\n\t\t{}^\n\t[{}(Ln:{} Col:{})]", self.get_line(line), if col > 0 { " ".repeat(col - 1) } else { String::new() }, self.filename, self.row, self.column)
     }
 }
