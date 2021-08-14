@@ -1,7 +1,6 @@
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::token::Token;
-use crate::lang::parser::node::Node;
 
 pub struct Parser<'a> {
     tokens: Vec<Token<'a>>,
@@ -10,15 +9,12 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    fn new(tokens: Vec<Token<'a>>, filename: &'a str) -> Self {
-        if tokens.len() < 1 {
-            dispatch_error(ErrorType::EmptyFile(filename), None)
-        }
+}
 
-        let first = tokens.get(0).unwrap();
+impl Iterator for Parser<'_> {
+    type Item = ();
 
-        Self { tokens, index: 0, current: first }
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
     }
-
-    fn statements(&self) {}
 }
