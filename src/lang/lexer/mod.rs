@@ -5,7 +5,7 @@ use crate::lang::lexer::position::Position;
 use crate::lang::lexer::token::Token;
 use crate::lang::lexer::token::token_type::TokenType;
 
-mod token;
+pub mod token;
 mod char_maps;
 pub mod position;
 
@@ -34,9 +34,9 @@ impl<'a> Lexer<'a> {
     pub fn lex(&mut self) -> Vec<Token<'a>> {
         let mut tokens = Vec::new();
 
-        while !self.is_done() {
+        while !self.is_done() { // we have more tokens to consume
             if self.is_newline() {
-                if self.get_last_token(&tokens) == TokenType::Newline || self.wrap_count > 0 { self.advance(); } else { tokens.push(self.consume_newline()); };
+                if self.get_last_token(&tokens) == TokenType::Newline || self.wrap_count > 0 { self.advance(); } else { tokens.push(self.consume_newline()); }; // implicit line joining
             } else if self.current.is_whitespace() {
                 self.advance();
             } else if self.current.is_ascii_digit() {
@@ -79,7 +79,7 @@ impl<'a> Lexer<'a> {
             self.advance();
         }
 
-        if buffer.ends_with('.') { // can't end a number with a decimal
+        if buffer.ends_with('.') { // number can't end with a decimal
             dispatch_error(ErrorType::DecimalEnding, Some(self.position));
         }
 
@@ -99,7 +99,7 @@ impl<'a> Lexer<'a> {
         match char_maps::get_token(buffer) {
             Ok(operator) => Token::new(operator, None, start),
             Err(value) => {
-                dispatch_error(ErrorType::InvalidOperator(value.as_str()), Some(self.position));
+                dispatch_error(ErrorType::InvalidOperator(value.as_str()), Some(start));
                 panic!(); // (not called) avoid incompatible arm type error
             }
         }
