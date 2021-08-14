@@ -19,7 +19,7 @@ pub enum ErrorType<'a> {
     UnexpectedArgCount(usize, usize),
     InvalidIteration(&'a str),
     UnknownKeyword(&'a str),
-
+    EmptyFile(&'a str),
 }
 
 impl ToString for ErrorType<'_> {
@@ -45,6 +45,7 @@ impl ToString for ErrorType<'_> {
             ErrorType::UnexpectedArgCount(a1, a2) => format!("Expected {} args, instead got {}", a1, a2),
             ErrorType::InvalidIteration(a1) => format!("Cannot iterate over type '{}'", a1),
             ErrorType::UnknownKeyword(a1) => format!("Unknown keyword '{}'", a1),
+            ErrorType::EmptyFile(a1) => format!("Cannot parse empty file '{}'", a1)
         }
     }
 }
