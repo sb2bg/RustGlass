@@ -12,6 +12,7 @@ pub enum TokenType {
     TimesEquals,
     DivideEquals,
     ModEquals,
+    PowEquals,
     Not,
     Or,
     GreaterThan,

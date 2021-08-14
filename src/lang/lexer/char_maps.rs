@@ -25,6 +25,7 @@ lazy_static! {
         m.insert("/=", TokenType::DivideEquals);
         m.insert("%=", TokenType::ModEquals);
         m.insert("==", TokenType::DoubleEqual);
+        m.insert("**=", TokenType::PowEquals);
         m.insert("(", TokenType::Lparen);
         m.insert(")", TokenType::Rparen);
         m.insert("{", TokenType::Lbrace);
@@ -104,7 +105,7 @@ pub fn get_esc(value: char) -> Result<char, char> {
 
 pub fn get_wrapper(value: char) -> Option<bool> {
     return match WRAP_MAP.get(&value) {
-        Some(result) => Some(*result), // dereference bool, only reason I didn't explicit return
+        Some(result) => Some(*result), // dereference bool, only reason I didn't return the option
         None => None
     }
 }
