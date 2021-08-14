@@ -1,11 +1,11 @@
 use std::fs;
-use std::time::SystemTime;
 
 use clap::{App, Arg};
 
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::Lexer;
+use std::time::Instant;
 
 mod errorsystem;
 mod lang;
@@ -23,6 +23,10 @@ fn main() {
             .long("debug")
             .short("d")
             .help("Prints lexing, parsing and interpreting debug info"))
+        .arg(Arg::with_name("tokens")
+            .long("tokens")
+            .short("t")
+            .help("Shows the tokens that were lexed"))
         .get_matches();
 
     let filename;
@@ -31,8 +35,14 @@ fn main() {
     match matches.value_of("filename") {
         Some(value) => { filename = value; }
         None => {
-            // todo - not marked as todo!() because intellij isn't smart enough to know filename has to be initialized
-            unimplemented!();
+            let mut reader = String::new();
+            let stdin = std::io::stdin();
+
+            while stdin.read_line(&mut reader).is_ok() {
+                println!("echo: {}", reader);
+            }
+
+            return;
         }
     }
 
@@ -45,15 +55,19 @@ fn main() {
     };
     let src = src.as_str();
     let mut lexer = Lexer::new(filename, src);
-    let start = SystemTime::now();
+    let start = Instant::now();
     let tokens = lexer.lex();
-    let end = SystemTime::now();
+    let end = Instant::now();
 
     // prints info if -d flag is included
     if debugging {
-        let nanos = end.duration_since(start).unwrap().as_nanos();
+        let nanos = end.duration_since(start).as_nanos();
         println!("Lexing took {} nanos, {} millis", nanos, nanos as f64 / 1_000_000f64);
         println!("Total of {} tokens created", tokens.len());
+    }
+
+    // prints token list if flag -t is included
+    if matches.is_present("tokens") {
         println!("{}", tokens.into_iter().map(|token| token.to_string() + ", ").collect::<String>());
     }
 }
