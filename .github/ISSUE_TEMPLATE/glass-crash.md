@@ -1,7 +1,7 @@
 ---
 name: Glass Crash
 about: Report a fatal crash
-title: "[Glass Crash]"
+title: ''
 labels: Fatal Exception
 assignees: ''
 
