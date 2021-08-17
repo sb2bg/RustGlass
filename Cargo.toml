@@ -1,6 +1,8 @@
 [package]
 name = "rust_glass"
 version = "0.1.0"
+authors = ["Sullivan B"]
+description = "Dynamically typed language written in RustLang"
 edition = "2018"
 
 [dependencies]
