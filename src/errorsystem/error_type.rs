@@ -9,7 +9,7 @@ pub enum ErrorType<'a> {
     UnknownEscapeSequence(char),
     UnexpectedExpression(&'a str),
     InvalidInversion(&'a str),
-    InvalidOperator(&'a str),
+    InvalidOperator(String),
     NoOperatorDefinition(&'a str),
     InvalidIndex(usize),
     NoDefiningScope(&'a str),
@@ -20,6 +20,7 @@ pub enum ErrorType<'a> {
     InvalidIteration(&'a str),
     UnknownKeyword(&'a str),
     EmptyFile(&'a str),
+    Fatal(String),
 }
 
 impl ToString for ErrorType<'_> {
@@ -45,7 +46,8 @@ impl ToString for ErrorType<'_> {
             ErrorType::UnexpectedArgCount(a1, a2) => format!("Expected {} args, instead got {}", a1, a2),
             ErrorType::InvalidIteration(a1) => format!("Cannot iterate over type '{}'", a1),
             ErrorType::UnknownKeyword(a1) => format!("Unknown keyword '{}'", a1),
-            ErrorType::EmptyFile(a1) => format!("Cannot parse empty file '{}'", a1)
+            ErrorType::EmptyFile(a1) => format!("Cannot parse empty file '{}'", a1),
+            ErrorType::Fatal(a1) => format!("Glass fatal error: '{}' -> Please report this crash here: https://github.com/sb2bg/RustGlass/issues/new?labels=Fatal+Exception&template=glass-crash.md", a1)
         }
     }
 }
