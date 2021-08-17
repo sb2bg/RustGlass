@@ -26,15 +26,6 @@ lazy_static! {
         m.insert("%=", TokenType::ModEquals);
         m.insert("==", TokenType::DoubleEqual);
         m.insert("**=", TokenType::PowEquals);
-        m.insert("(", TokenType::Lparen);
-        m.insert(")", TokenType::Rparen);
-        m.insert("{", TokenType::Lbrace);
-        m.insert("}", TokenType::Rbrace);
-        m.insert("[", TokenType::Lbracket);
-        m.insert("]", TokenType::Rbracket);
-        m.insert(",", TokenType::Comma);
-        m.insert(":", TokenType::Colon);
-        m.insert(".", TokenType::Period);
         m.insert("void", TokenType::Void);
         m.insert("print", TokenType::Print);
         m.insert("println", TokenType::Println);
@@ -77,35 +68,33 @@ lazy_static! {
 
 lazy_static! {
     // used to increment and decrement a wrap counter for implicit line joining
-    static ref WRAP_MAP: HashMap<char, bool> = {
+    static ref WRAP_MAP: HashMap<char, (TokenType, Option<bool>)> = {
         let mut m = HashMap::new();
-        m.insert('(', true);
-        m.insert('[', true);
-        m.insert('{', true);
-        m.insert(')', false);
-        m.insert(']', false);
-        m.insert('}', false);
+        m.insert('(', (TokenType::Lparen, Some(true)));
+        m.insert(')', (TokenType::Rparen, Some(false)));
+        m.insert('[', (TokenType::Lbracket, Some(true)));
+        m.insert(']', (TokenType::Rbracket, Some(false)));
+        m.insert('{', (TokenType::Lbracket, Some(true)));
+        m.insert('}', (TokenType::Rbrace, Some(false)));
+        m.insert(',', (TokenType::Comma, None));
+        m.insert(':', (TokenType::Colon, None));
+        m.insert('.', (TokenType::Period, None));
         m
     };
 }
 
-pub fn get_token(value: String) -> Result<TokenType, String> {
-    match TOKEN_MAP.get(value.as_str()) {
-        Some(result) => Ok(*result),
-        None => Err(value)
-    }
+pub fn get_token<'a>(value: &String) -> Option<&'a TokenType> {
+    TOKEN_MAP.get(value.as_str())
 }
 
-pub fn get_esc(value: char) -> Result<char, char> {
-    match ESC_MAP.get(&value) {
-        Some(result) => Ok(*result),
-        None => Err(value)
-    }
+pub fn get_esc<'a>(value: char) -> Option<&'a char> {
+    ESC_MAP.get(&value)
 }
 
-pub fn get_wrapper(value: char) -> Option<bool> {
-    return match WRAP_MAP.get(&value) {
-        Some(result) => Some(*result), // dereference bool, only reason I didn't return the option
-        None => None
-    }
+pub fn get_single<'a>(value: char) -> Option<&'a (TokenType, Option<bool>)> {
+    WRAP_MAP.get(&value)
+}
+
+pub fn is_single(value: char) -> bool {
+    WRAP_MAP.contains_key(&value)
 }
