@@ -196,7 +196,6 @@ impl<'a> Lexer<'a> {
         let start = self.position;
         self.advance_newline();
 
-        self.newline = true;
         Some(Token::new(TokenType::Newline, None, start))
     }
 
@@ -227,7 +226,10 @@ impl<'a> Iterator for Lexer<'a> {
             Some(&curr) => {
                 if Self::is_newline(curr) {
                     return match self.consume_newline() {
-                        Some(token) => Some(token),
+                        Some(token) => {
+                            self.newline = true;
+                            Some(token)
+                        }
                         None => {
                             self.advance_newline();
                             self.next()
@@ -237,17 +239,23 @@ impl<'a> Iterator for Lexer<'a> {
                     self.advance();
                     self.next()
                 } else if curr.is_ascii_digit() {
+                    self.newline = false;
                     Some(self.consume_number())
                 } else if curr == '#' {
+                    self.newline = false;
                     self.consume_comment();
                     self.next()
                 } else if char_maps::is_single(curr) {
+                    self.newline = false;
                     Some(self.consume_single())
                 } else if curr == '"' {
+                    self.newline = false;
                     Some(self.consume_string())
                 } else if Self::is_operator(curr) {
+                    self.newline = false;
                     Some(self.consume_operator())
                 } else {
+                    self.newline = false;
                     Some(self.consume_identifier())
                 }
             }
