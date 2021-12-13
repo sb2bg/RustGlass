@@ -2,17 +2,19 @@ use std::{fs, panic};
 use std::time::Instant;
 
 use clap::{App, Arg};
+use git_version::git_version;
 
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::Lexer;
+use crate::lang::parser::Parser;
 
 mod errorsystem;
 mod lang;
 
 fn main() {
     panic::set_hook(Box::new(|info| {
-        dispatch_error(ErrorType::Fatal(format!("{}, Version: {}", info, clap::crate_version!())), None);
+        dispatch_error(ErrorType::Fatal(format!("{}, Version: {}, Revision: {}", info, clap::crate_version!(), git_version!())), None);
     }));
 
     let matches = App::new(clap::crate_name!())
@@ -58,24 +60,30 @@ fn main() {
             panic!(); // (not called) avoid incompatible arm type error
         }
     };
+
     let src = src.as_str();
-    let mut debug = Lexer::new(filename, src);
-    let start = Instant::now();
 
-    while let Some(token) = debug.next() {
-        if token_debug { // prints token list if flag -t is included
-            println!("{}", token.to_string());
+    if debugging || token_debug {
+        let mut debug = Lexer::new(filename, src);
+
+        let start = Instant::now();
+        let tokens = debug.lex();
+        let end = Instant::now();
+
+        if token_debug {
+            for token in tokens {
+                println!("{}", token.to_string());
+            }
         }
-    }
 
-    let end = Instant::now();
-
-    // prints info if -d flag is included
-    if debugging {
-        let nanos = end.duration_since(start).as_nanos();
-        println!("Lexing took {} nanos, {} millis", nanos, nanos as f64 / 1_000_000f64);
+        if debugging {
+            let nanos = end.duration_since(start).as_nanos();
+            println!("Lexing took {} nanos, {} millis", nanos, nanos as f64 / 1_000_000f64);
+        }
     }
 
     let mut lexer = Lexer::new(filename, src);
     // todo -> pass to parser
+
+    let mut parser = Parser::new(&mut lexer);
 }
