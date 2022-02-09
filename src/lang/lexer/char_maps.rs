@@ -68,7 +68,7 @@ lazy_static! {
 
 lazy_static! {
     // used to increment and decrement a wrap counter for implicit line joining
-    static ref WRAP_MAP: HashMap<char, (TokenType, Option<bool>)> = {
+    static ref SINGLE_MAP: HashMap<char, (TokenType, Option<bool>)> = {
         let mut m = HashMap::new();
         m.insert('(', (TokenType::Lparen, Some(true)));
         m.insert(')', (TokenType::Rparen, Some(false)));
@@ -83,8 +83,8 @@ lazy_static! {
     };
 }
 
-pub fn get_token<'a>(value: &String) -> Option<&'a TokenType> {
-    TOKEN_MAP.get(value.as_str())
+pub fn get_token<'a, S: Into<String>>(value: S) -> Option<&'a TokenType> {
+    TOKEN_MAP.get(&*value.into())
 }
 
 pub fn get_esc<'a>(value: char) -> Option<&'a char> {
@@ -92,9 +92,9 @@ pub fn get_esc<'a>(value: char) -> Option<&'a char> {
 }
 
 pub fn get_single<'a>(value: char) -> Option<&'a (TokenType, Option<bool>)> {
-    WRAP_MAP.get(&value)
+    SINGLE_MAP.get(&value)
 }
 
 pub fn is_single(value: char) -> bool {
-    WRAP_MAP.contains_key(&value)
+    SINGLE_MAP.contains_key(&value)
 }
