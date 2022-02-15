@@ -136,7 +136,7 @@ impl<'a> Lexer<'a> {
         }
 
         if !self.is_quote() {
-            dispatch_error(ErrorType::UnclosedString, Some(self.position));
+            dispatch_error(ErrorType::UnclosedString, Some(start));
         }
 
         self.advance();

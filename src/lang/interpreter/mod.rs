@@ -6,16 +6,25 @@ match (x, y) {
 }
  */
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::lang::interpreter::scope::Scope;
 
 pub mod primitive;
 mod scope;
 
-pub struct Interpreter {
-    scope: Scope,
+pub struct Interpreter<'a> {
+    scope: Scope<'a>,
 }
 
-impl Interpreter {
+impl<'a> Interpreter<'a> {
+    pub fn new(parent: Option<Rc<RefCell<Scope<'a>>>>, scope_name: &'a str) -> Self {
+        Interpreter {
+            scope: Scope::new(None, scope_name),
+        }
+    }
+
     fn visit(&self, node: (/*Node*/)) -> (/*Primitive*/) {
         todo!()
     }
