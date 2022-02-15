@@ -8,6 +8,7 @@ use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::Lexer;
 use crate::lang::parser::Parser;
+use crate::lang::REPL;
 
 mod errorsystem;
 mod lang;
@@ -42,13 +43,8 @@ fn main() {
     match matches.value_of("filename") {
         Some(value) => { filename = value; }
         None => {
-            let mut reader = String::new();
-            let stdin = std::io::stdin();
-
-            while stdin.read_line(&mut reader).is_ok() {
-                println!("echo: {}", reader);
-            }
-
+            let mut repl = REPL::new();
+            repl.run();
             return;
         }
     }
@@ -72,7 +68,7 @@ fn main() {
 
         if token_debug {
             for token in tokens {
-                println!("{}", token.to_string());
+                println!("{}", token);
             }
         }
 
@@ -85,5 +81,5 @@ fn main() {
     let mut lexer = Lexer::new(filename, src);
     // todo -> pass to parser
 
-    let mut parser = Parser::new(&mut lexer);
+    //let mut parser = Parser::new(&mut lexer);
 }
