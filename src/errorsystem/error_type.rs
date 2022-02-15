@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 pub enum ErrorType<'a> {
     GenericError(&'a str),
     DoubleDecimal,
@@ -7,7 +9,7 @@ pub enum ErrorType<'a> {
     UnknownChar(char),
     UnclosedString,
     UnknownEscapeSequence(char),
-    UnexpectedExpression(&'a str),
+    UnexpectedExpression(&'a str, &'a str),
     InvalidInversion(&'a str),
     InvalidOperator(String),
     NoOperatorDefinition(&'a str),
@@ -23,31 +25,31 @@ pub enum ErrorType<'a> {
     Fatal(String),
 }
 
-impl ToString for ErrorType<'_> {
-    fn to_string(&self) -> String {
+impl Display for ErrorType<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ErrorType::GenericError(a1) => format!("Unknown error occurred during the '{}' process", a1),
-            ErrorType::UnknownFile(a1) => format!("Couldn't find file '{}'", a1),
-            ErrorType::DoubleDecimal => String::from("Cannot have two decimals in a number"),
-            ErrorType::DecimalEnding => String::from("Number cannot end in a decimal"),
-            ErrorType::DivisionByZero => String::from("Cannot divide by zero"),
-            ErrorType::UnknownChar(a1) => format!("Unknown character '{}' encountered", a1),
-            ErrorType::UnclosedString => String::from("Unclosed string"),
-            ErrorType::UnknownEscapeSequence(a1) => format!("Unknown escape sequence '{}'", a1),
-            ErrorType::UnexpectedExpression(a1) => format!("Expected '{}'", a1),
-            ErrorType::InvalidInversion(a1) => format!("Cannot invert value of type '{}'", a1),
-            ErrorType::InvalidOperator(a1) => format!("Invalid operator '{}'", a1),
-            ErrorType::NoOperatorDefinition(a1) => format!("No operator definition on type '{}'", a1),
-            ErrorType::InvalidIndex(a1) => format!("Invalid index '{}'", a1),
-            ErrorType::NoDefiningScope(a1) => format!("Variable '{}' undefined", a1),
-            ErrorType::OutOfBounds(a1, a2) => format!("Index {} out of bounds for range {}", a1, a2),
-            ErrorType::UnexpectedType(a1, a2) => format!("Expected type '{}' but got '{}'", a1, a2),
-            ErrorType::InvalidCall(a1) => format!("Cannot call type '{}'", a1),
-            ErrorType::UnexpectedArgCount(a1, a2) => format!("Expected {} args, instead got {}", a1, a2),
-            ErrorType::InvalidIteration(a1) => format!("Cannot iterate over type '{}'", a1),
-            ErrorType::UnknownKeyword(a1) => format!("Unknown keyword '{}'", a1),
-            ErrorType::EmptyFile(a1) => format!("Cannot parse empty file '{}'", a1),
-            ErrorType::Fatal(a1) => format!("Glass fatal error: '{}' -> Please report this crash here: https://github.com/sb2bg/RustGlass/issues/new?labels=Fatal+Exception&template=glass-crash.md", a1)
+            ErrorType::GenericError(a1) => write!(f, "Unknown error occurred during the '{}' process", a1),
+            ErrorType::UnknownFile(a1) => write!(f, "File or directory '{}' was unable to be found", a1),
+            ErrorType::DoubleDecimal => write!(f, "Cannot have two decimals in a number"),
+            ErrorType::DecimalEnding => write!(f, "Number cannot end in a decimal"),
+            ErrorType::DivisionByZero => write!(f, "Cannot divide by zero"),
+            ErrorType::UnknownChar(a1) => write!(f, "Unknown character '{}' encountered", a1),
+            ErrorType::UnclosedString => write!(f, "Unclosed string starting"),
+            ErrorType::UnknownEscapeSequence(a1) => write!(f, "Escape sequence '{}' unknown", a1),
+            ErrorType::UnexpectedExpression(a1, a2) => write!(f, "Expected '{}' but got '{}' instead", a1, a2),
+            ErrorType::InvalidInversion(a1) => write!(f, "Type '{}' cannot be inverted", a1),
+            ErrorType::InvalidOperator(a1) => write!(f, "Operator '{}' is invalid", a1),
+            ErrorType::NoOperatorDefinition(a1) => write!(f, "Cannot use operator '{}' on this type", a1),
+            ErrorType::InvalidIndex(a1) => write!(f, "Invalid index '{}'", a1),
+            ErrorType::NoDefiningScope(a1) => write!(f, "Variable '{}' undefined", a1),
+            ErrorType::OutOfBounds(a1, a2) => write!(f, "Index {} out of bounds for range {}", a1, a2),
+            ErrorType::UnexpectedType(a1, a2) => write!(f, "Expected type '{}' but got '{}' instead", a1, a2),
+            ErrorType::InvalidCall(a1) => write!(f, "Type '{}' cannot be called", a1),
+            ErrorType::UnexpectedArgCount(a1, a2) => write!(f, "Expected {} args but got {}", a1, a2),
+            ErrorType::InvalidIteration(a1) => write!(f, "Type '{}' is not iterable", a1),
+            ErrorType::UnknownKeyword(a1) => write!(f, "Keyword '{}' unknown", a1),
+            ErrorType::EmptyFile(a1) => write!(f, "File '{}' is empty", a1),
+            ErrorType::Fatal(a1) => write!(f, "Glass fatal error: '{}' -> Please report this crash here: https://github.com/sb2bg/RustGlass/issues/new?labels=Fatal+Exception&template=glass-crash.md", a1)
         }
     }
 }

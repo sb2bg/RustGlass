@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 
@@ -36,10 +38,17 @@ impl<'a> Position<'a> {
     }
 }
 
-impl ToString for Position<'_> {
-    fn to_string(&self) -> String {
+impl Display for Position<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let line = self.row - 1;
         let col = self.column - 1;
-        format!("\n\n\t\t{}\n\t\t{}^\n\t[{}(Ln:{} Col:{})]", self.get_line(line), if col > 0 { " ".repeat(col - 1) } else { String::new() }, self.filename, self.row, self.column)
+
+        write!(
+            f,
+            "\n\n\t\t{}\n\t\t{}^\n\t[{}(Ln:{} Col:{})]",
+            self.get_line(line),
+            if col > 0 { " ".repeat(col - 1) } else { String::new() },
+            self.filename, self.row, self.column
+        )
     }
 }

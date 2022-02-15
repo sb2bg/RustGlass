@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::lang::lexer::position::Position;
 use crate::lang::lexer::token::token_type::TokenType;
 
@@ -26,9 +28,9 @@ impl<'a> Token<'a> {
     }
 }
 
-impl ToString for Token<'_> {
-    fn to_string(&self) -> String {
+impl Display for Token<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let token_type: &str = self.token_type.into();
-        format!("{}{}", token_type, if self.value.is_empty() { String::new() } else { format_args!("({})", self.value).to_string() })
+        write!(f, "{}{}", token_type, if self.value.is_empty() { String::new() } else { format!("({})", self.value) })
     }
 }
