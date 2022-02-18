@@ -1,13 +1,18 @@
-use crate::errorsystem::error_type::ErrorType;
+use crate::ErrorType;
 use crate::lang::lexer::position::Position;
 
 pub mod error_type;
 
-pub fn dispatch_error(error: ErrorType, pos: Option<Position>) {
-    eprintln!("\n\tFatal exception during runtime -> \"{}{}\"", error, match pos {
-        Some(unwrapped) => format!(" at {}", unwrapped),
-        None => String::new()
-    });
+#[macro_export]
+macro_rules! dispatch_error {
+    ($error: expr, $pos: expr) => {
+        eprintln!("\n\tFatal exception during runtime -> \"{}{}\"", $error, $pos);
+        std::process::exit(1); // This is to make the compiler happy (avoid mismatched arms)
+    };
 
-    std::process::exit(1);
+    ($error: expr) => {
+        eprintln!("\n\tFatal exception during runtime -> \"{}\"", $error);
+        std::process::exit(1); // This is to make the compiler happy (avoid mismatched arms)
+    };
 }
+

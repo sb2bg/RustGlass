@@ -4,7 +4,6 @@ use std::time::Instant;
 use clap::{App, Arg};
 use git_version::git_version;
 
-use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::Lexer;
 use crate::lang::parser::Parser;
@@ -15,7 +14,7 @@ mod lang;
 
 fn main() {
     panic::set_hook(Box::new(|info| {
-        dispatch_error(ErrorType::Fatal(format!("{}, Version: {}, Revision: {}", info, clap::crate_version!(), git_version!())), None);
+        dispatch_error!(ErrorType::Fatal(format!("{}, Version: {}, Revision: {}", info, clap::crate_version!(), git_version!())));
     }));
 
     let matches = App::new(clap::crate_name!())
@@ -49,11 +48,12 @@ fn main() {
         }
     }
 
+    // todo: pass this to lang instead to be handled
+
     let src = match fs::read_to_string(filename) {
         Ok(contents) => contents,
         Err(_) => {
-            dispatch_error(ErrorType::UnknownFile(filename), None);
-            panic!(); // (not called) avoid incompatible arm type error
+            dispatch_error!(ErrorType::UnknownFile(filename));
         }
     };
 

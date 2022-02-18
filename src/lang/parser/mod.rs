@@ -1,4 +1,3 @@
-use crate::errorsystem::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::token::Token;
 use crate::Lexer;

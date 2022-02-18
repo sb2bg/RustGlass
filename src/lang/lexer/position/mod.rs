@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::errorsystem::dispatch_error;
+use crate::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 
 #[derive(Copy, Clone)]
@@ -29,8 +29,7 @@ impl<'a> Position<'a> {
         let result = match self.source.lines().nth(line) {
             Some(line) => line,
             None => {
-                dispatch_error(ErrorType::GenericError("converting position to string"), None);
-                panic!(); // (not called) avoid incompatible arm type error
+                dispatch_error!(ErrorType::GenericError("converting position to string"));
             }
         };
 

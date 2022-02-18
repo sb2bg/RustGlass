@@ -1,4 +1,4 @@
-use crate::errorsystem::dispatch_error;
+use crate::dispatch_error;
 use crate::errorsystem::error_type::ErrorType;
 use crate::lang::lexer::position::Position;
 use crate::lang::lexer::token::Token;
@@ -19,6 +19,10 @@ pub struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     pub fn new(filename: &'a str, source: &'a str) -> Self {
+        if source.len() == 0 {
+            dispatch_error!(ErrorType::EmptyFile(filename));
+        }
+
         let chars: Vec<char> = source.chars().collect();
         let first = if chars.len() <= 0 { '\0' } else { *chars.get(0).unwrap() };
 
@@ -74,8 +78,9 @@ impl<'a> Lexer<'a> {
 
         while !self.is_done() && self.current.is_ascii_digit() || self.current == '.' {
             if self.current == '.' {
-                if dec { // already had a decimal in the number
-                    dispatch_error(ErrorType::DoubleDecimal, Some(self.position));
+                if dec {
+                    // already had a decimal in the number
+                    dispatch_error!(ErrorType::DoubleDecimal, self.position);
                 }
                 dec = true;
             }
@@ -84,8 +89,9 @@ impl<'a> Lexer<'a> {
             self.advance();
         }
 
-        if buffer.ends_with('.') { // number can't end with a decimal
-            dispatch_error(ErrorType::DecimalEnding, Some(self.position));
+        if buffer.ends_with('.') {
+            // number can't end with a decimal
+            dispatch_error!(ErrorType::DecimalEnding, self.position);
         }
 
         Token::new(TokenType::Number, Some(buffer), start)
@@ -103,8 +109,7 @@ impl<'a> Lexer<'a> {
         match char_maps::get_token(&buffer) {
             Some(operator) => Token::new(*operator, None, start),
             _ => {
-                dispatch_error(ErrorType::InvalidOperator(buffer), Some(start));
-                panic!(); // (not called) avoid incompatible arm type error
+                dispatch_error!(ErrorType::InvalidOperator(buffer), start);
             }
         }
     }
@@ -121,8 +126,7 @@ impl<'a> Lexer<'a> {
                 match char_maps::get_esc(self.current) {
                     Some(escaped) => buffer.push(*escaped),
                     None => {
-                        dispatch_error(ErrorType::UnknownEscapeSequence(self.current), Some(self.position));
-                        panic!(); // (not called) avoid incompatible arm type error
+                        dispatch_error!(ErrorType::UnknownEscapeSequence(self.current), self.position);
                     }
                 }
                 esc = false;
@@ -136,7 +140,7 @@ impl<'a> Lexer<'a> {
         }
 
         if !self.is_quote() {
-            dispatch_error(ErrorType::UnclosedString, Some(start));
+            dispatch_error!(ErrorType::UnclosedString, start);
         }
 
         self.advance();
@@ -158,8 +162,7 @@ impl<'a> Lexer<'a> {
                 token_type
             }
             None => {
-                dispatch_error(ErrorType::UnknownChar(self.current), Some(start));
-                panic!(); // (not called) avoid incompatible arm type error
+                dispatch_error!(ErrorType::UnknownChar(self.current), start);
             }
         };
 
@@ -185,7 +188,7 @@ impl<'a> Lexer<'a> {
         }
 
         if buffer.len() < 1 {
-            dispatch_error(ErrorType::UnknownChar(self.current), Some(self.position));
+            dispatch_error!(ErrorType::UnknownChar(self.current), self.position);
         }
 
         match char_maps::get_token(&buffer) {
