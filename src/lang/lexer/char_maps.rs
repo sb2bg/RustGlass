@@ -38,6 +38,7 @@ lazy_static! {
         m.insert("function", TokenType::Function);
         m.insert("in", TokenType::In);
         m.insert("if", TokenType::If);
+        m.insert("is", TokenType::Is);
         m.insert("bool", TokenType::Bool);
         m.insert("num", TokenType::Num);
         m.insert("!=", TokenType::NotEqual);

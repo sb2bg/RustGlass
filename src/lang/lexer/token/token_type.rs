@@ -15,6 +15,7 @@ pub enum TokenType {
     PowEquals,
     Not,
     Or,
+    Is,
     GreaterThan,
     GreaterThanEqual,
     LessThan,
