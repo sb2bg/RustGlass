@@ -121,7 +121,7 @@ impl<'a> Lexer<'a> {
         let mut buffer = String::new();
         let mut esc = false;
 
-        while !self.is_done() && !self.is_quote() {
+        while !self.is_done() && !(self.is_quote() && !esc) {
             if esc {
                 match char_maps::get_esc(self.current) {
                     Some(escaped) => buffer.push(*escaped),
