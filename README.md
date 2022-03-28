@@ -1,6 +1,6 @@
 # RustGlass
 
-TODO - README.md
+A dynamically typed esoteric programming language focusing on ease of use and performance.
 
 ## Examples
 
@@ -21,6 +21,8 @@ end
 
 println(for i = 1 to 16 => fizzBuzz(i))
 ```
+
+which would print `[1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz]` to console.
 
 ### RadixSort
 
@@ -54,5 +56,3 @@ end
 
 println(radixSort([1, 3, 2, 4, 5]))
 ```
-
-which would print `[1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz]` to console.
