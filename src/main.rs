@@ -1,4 +1,7 @@
+#![feature(type_ascription, backtrace)]
+
 use std::{fs, panic};
+use std::backtrace::Backtrace;
 use std::time::Instant;
 
 use clap::{App, Arg};
@@ -14,7 +17,13 @@ mod lang;
 
 fn main() {
     panic::set_hook(Box::new(|info| {
-        dispatch_error!(ErrorType::Fatal(format!("{}, Version: {}, Revision: {}", info, clap::crate_version!(), git_version!())));
+        let backtrace = if cfg!(debug_assertions) { // only print backtrace in debug mode
+            Some(Backtrace::capture())
+        } else {
+            None
+        };
+
+        dispatch_error!(ErrorType::Fatal(format!("{}, Version: {}, Revision: {}", info, clap::crate_version!(), git_version!()), backtrace));
     }));
 
     let matches = App::new(clap::crate_name!())
@@ -79,7 +88,10 @@ fn main() {
     }
 
     let mut lexer = Lexer::new(filename, src);
-    // todo -> pass to parser
+    let mut parser = Parser::new(lexer.lex());
+    let parsed = parser.parse();
 
-    //let mut parser = Parser::new(&mut lexer);
+    if debugging {
+        println!("{}", parsed);
+    }
 }
