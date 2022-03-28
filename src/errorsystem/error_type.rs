@@ -1,4 +1,7 @@
+use std::backtrace::Backtrace;
 use std::fmt::Display;
+
+use crate::lang::lexer::token::token_type::TokenType;
 
 pub enum ErrorType<'a> {
     GenericError(&'a str),
@@ -9,7 +12,7 @@ pub enum ErrorType<'a> {
     UnknownChar(char),
     UnclosedString,
     UnknownEscapeSequence(char),
-    UnexpectedExpression(&'a str, &'a str),
+    UnexpectedExpression(TokenType, TokenType),
     InvalidInversion(&'a str),
     InvalidOperator(String),
     NoOperatorDefinition(&'a str),
@@ -22,7 +25,8 @@ pub enum ErrorType<'a> {
     InvalidIteration(&'a str),
     UnknownKeyword(&'a str),
     EmptyFile(&'a str),
-    Fatal(String),
+    ReachedEndOfFile,
+    Fatal(String, Option<Backtrace>),
 }
 
 impl Display for ErrorType<'_> {
@@ -36,7 +40,7 @@ impl Display for ErrorType<'_> {
             ErrorType::UnknownChar(a1) => write!(f, "Unknown character '{}' encountered", a1),
             ErrorType::UnclosedString => write!(f, "Unclosed string starting"),
             ErrorType::UnknownEscapeSequence(a1) => write!(f, "Escape sequence '{}' unknown", a1),
-            ErrorType::UnexpectedExpression(a1, a2) => write!(f, "Expected '{}' but got '{}' instead", a1, a2),
+            ErrorType::UnexpectedExpression(a1, a2) => write!(f, "Expected {} but got {}", a1.into(): &str, a2.into(): &str),
             ErrorType::InvalidInversion(a1) => write!(f, "Type '{}' cannot be inverted", a1),
             ErrorType::InvalidOperator(a1) => write!(f, "Operator '{}' is invalid", a1),
             ErrorType::NoOperatorDefinition(a1) => write!(f, "Cannot use operator '{}' on this type", a1),
@@ -49,7 +53,11 @@ impl Display for ErrorType<'_> {
             ErrorType::InvalidIteration(a1) => write!(f, "Type '{}' is not iterable", a1),
             ErrorType::UnknownKeyword(a1) => write!(f, "Keyword '{}' unknown", a1),
             ErrorType::EmptyFile(a1) => write!(f, "File '{}' is empty", a1),
-            ErrorType::Fatal(a1) => write!(f, "Glass fatal error: '{}' -> Please report this crash here: https://github.com/sb2bg/RustGlass/issues/new?labels=Fatal+Exception&template=glass-crash.md", a1)
+            ErrorType::ReachedEndOfFile => write!(f, "Unexpectedly reached end of file while parsing"),
+            ErrorType::Fatal(a1, a2) => write!(f, "Glass fatal error: '{}' ->\n\t\tPlease report this crash at https://github.com/sb2bg/RustGlass/issues/new?template=glass-crash.md{}", a1, match a2 {
+                Some(a2) => format!("\n\n\tStack trace ->\n\t{}", a2.to_string().trim_end().replace("\n", "\n\t")),
+                None => String::new(),
+            }),
         }
     }
 }
