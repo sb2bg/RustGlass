@@ -24,7 +24,7 @@ lazy_static! {
         m.insert("*=", TokenType::TimesEquals);
         m.insert("/=", TokenType::DivideEquals);
         m.insert("%=", TokenType::ModEquals);
-        m.insert("==", TokenType::DoubleEqual);
+        m.insert("==", TokenType::EqualEqual);
         m.insert("**=", TokenType::PowEquals);
         m.insert("void", TokenType::Void);
         m.insert("print", TokenType::Print);

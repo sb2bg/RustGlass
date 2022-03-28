@@ -1,5 +1,6 @@
 use strum_macros::IntoStaticStr;
 
+// todo: maybe use a macro to add position to each token type and then replace the nasty token struct with this (and then we can handle type casting in the lexer)
 #[derive(Copy, Clone, PartialEq, IntoStaticStr)]
 pub enum TokenType {
     Plus,
@@ -26,7 +27,7 @@ pub enum TokenType {
     Period,
     Rparen,
     Equal,
-    DoubleEqual,
+    EqualEqual,
     Lparen,
     Lbracket,
     Rbracket,
@@ -54,4 +55,7 @@ pub enum TokenType {
     Typeof,
     Comma,
     Colon,
+    Try,
+    Catch,
+    Finally,
 }
