@@ -26,6 +26,15 @@ impl<'a> Token<'a> {
     pub fn get_type(&self) -> TokenType {
         return self.token_type;
     }
+
+    pub fn take_pos(&self) -> Position<'a> {
+        return self.pos;
+    }
+
+    // todo: don't clone, maybe use Rc?
+    pub fn get_value(&self) -> String {
+        return self.value.clone();
+    }
 }
 
 impl Display for Token<'_> {
