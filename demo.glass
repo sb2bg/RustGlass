@@ -1,0 +1,80 @@
+func FizzBuzz(number) =>
+    if number % 15 == 0 =>
+        return "FizzBuzz"
+    else if number % 3 == 0 =>
+        return "Fizz"
+    else if number % 5 == 0 =>
+        return "Buzz"
+    else
+        return number
+    end
+end
+
+println(for i = 1 to 16 => FizzBuzz(i))
+
+func BubbleSort(arr) =>
+    for i = 1 to n - 1 =>
+        for j = n to i + 1 step -1 =>
+            if arr[j] < arr[j - 1] =>
+                temp = arr[j]
+                arr[j] = arr[j - 1]
+                arr[j - 1] = temp
+            end
+        end
+    end
+
+    return arr
+end
+
+println(BubbleSort([1, 3, 2, 4, 5]))
+
+func RadixSort(arr) =>
+    max = arr[0] =>
+    for i = 1 to n =>
+        if arr[i] > max =>
+            max = arr[i]
+        end
+    end
+
+    for i = 1 to max =>
+        bucket = [0] * 10
+        for j = 1 to n =>
+            bucket[arr[j] % 10] += 1
+        end
+
+        for j = 2 to 10 =>
+            bucket[j] += bucket[j - 1]
+        end
+
+        for j = n to 1 step -1 =>
+            bucket[arr[j] % 10] -= 1
+            arr[bucket[arr[j] % 10]] = arr[j]
+        end
+    end
+
+    return arr
+end
+
+println(RadixSort([1, 3, 2, 4, 5]))
+
+func QuickSort(arr) =>
+    if len(arr) <= 1 =>
+        return arr
+    end
+
+    pivot = arr[0]
+    left = []
+    right = []
+
+    for i = 1 to len(arr) - 1 =>
+        if arr[i] < pivot =>
+            left.Push(arr[i])
+        else
+            right.Push(arr[i])
+        end
+    end
+
+    return QuickSort(left).Concat(pivot, QuickSort(right))
+end
+
+println(QuickSort([1, 3, 2, 4, 5]))
